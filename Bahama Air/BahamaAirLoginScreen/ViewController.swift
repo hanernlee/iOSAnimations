@@ -80,7 +80,13 @@ class ViewController: UIViewController {
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
     
-    heading.center.x -= view.bounds.width
+    let flyRight = CABasicAnimation(keyPath: "position.x")
+    flyRight.fromValue = -view.bounds.size.width/2
+    flyRight.toValue = view.bounds.size.width/2
+    flyRight.duration = 0.5
+    
+    heading.layer.add(flyRight, forKey: nil)
+    
     username.center.x -= view.bounds.width
     password.center.x -= view.bounds.width
     
@@ -100,11 +106,7 @@ class ViewController: UIViewController {
     animateCloud(cloud2)
     animateCloud(cloud3)
     animateCloud(cloud4)
-    
-    UIView.animate(withDuration: 0.5) {
-        self.heading.center.x += self.view.bounds.width
-    }
-    
+
     UIView.animate(withDuration: 0.5, delay: 0.5, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.0, options: [], animations: {
         self.username.center.x += self.view.bounds.width
     }, completion: nil)
