@@ -102,6 +102,9 @@ class ViewController: UIViewController {
     flyRight.toValue = view.bounds.size.width/2
     flyRight.fillMode = kCAFillModeBoth
     flyRight.duration = 0.5
+    flyRight.delegate = self
+    flyRight.setValue("form", forKey: "name")
+    flyRight.setValue(heading.layer, forKey: "layer")
     
     heading.layer.add(flyRight, forKey: nil)
     
@@ -238,5 +241,11 @@ class ViewController: UIViewController {
             self.animateCloud(cloud)
         })
         
+    }
+}
+
+extension ViewController: CAAnimationDelegate {
+    func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
+        print("Animation did finish")
     }
 }
