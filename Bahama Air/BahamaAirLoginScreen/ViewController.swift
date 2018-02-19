@@ -95,7 +95,7 @@ class ViewController: UIViewController {
     
     statusPosition = status.center
     
-    info.frame = CGRect(x: 0.0, y: loginButton.center.y + 60.0, width: view.frame.size.width, height: 30)
+    info.frame = CGRect(x: 0.0, y: loginButton.center.y, width: view.frame.size.width, height: 30)
     info.backgroundColor = UIColor.clear
     info.font = UIFont(name: "HelveticaNeue", size: 12.0)
     info.textAlignment = .center
@@ -153,10 +153,10 @@ class ViewController: UIViewController {
   override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
     
-    animateCloud(cloud1)
-    animateCloud(cloud2)
-    animateCloud(cloud3)
-    animateCloud(cloud4)
+    animateCloud(layer: cloud1.layer)
+    animateCloud(layer: cloud2.layer)
+    animateCloud(layer: cloud3.layer)
+    animateCloud(layer: cloud4.layer)
 
     UIView.animate(withDuration: 0.5, delay: 0.5, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.0, options: [], animations: {
         self.loginButton.center.y += 30.0
@@ -168,6 +168,15 @@ class ViewController: UIViewController {
     flyLeft.toValue = info.layer.position.x
     flyLeft.duration = 5.0
     info.layer.add(flyLeft, forKey: "infoappear")
+    
+    let fadeLabelIn = CABasicAnimation(keyPath: "opacity")
+    fadeLabelIn.fromValue = 0.2
+    fadeLabelIn.toValue = 0.1
+    fadeLabelIn.duration = 4.5
+    info.layer.add(fadeLabelIn, forKey: "fadein")
+    
+    username.delegate = self
+    password.delegate = self
   }
   
   // MARK: further methods
@@ -248,17 +257,27 @@ class ViewController: UIViewController {
         })
     }
     
-    func animateCloud(_ cloud: UIImageView) {
-        let cloudSpeed = 60.0 / view.frame.size.width
-        let duration = (view.frame.size.width - cloud.frame.origin.x) * cloudSpeed
+    func animateCloud(layer: CALayer) {
+//        let cloudSpeed = 60.0 / view.frame.size.width
+//        let duration = (view.frame.size.width - cloud.frame.origin.x) * cloudSpeed
+//
+//        UIView.animate(withDuration: TimeInterval(duration), delay: 0.0, options: [.curveLinear], animations: {
+//            cloud.frame.origin.x = self.view.frame.size.width
+//        }, completion: { _ in
+//            cloud.frame.origin.x = -cloud.frame.size.width
+//            self.animateCloud(cloud)
+//        })
         
-        UIView.animate(withDuration: TimeInterval(duration), delay: 0.0, options: [.curveLinear], animations: {
-            cloud.frame.origin.x = self.view.frame.size.width
-        }, completion: { _ in
-            cloud.frame.origin.x = -cloud.frame.size.width
-            self.animateCloud(cloud)
-        })
+        let cloudSpeed = 60.0 / Double(view.frame.size.width)
+        let duration: TimeInterval = Double(view.layer.frame.size.width - layer.frame.origin.x) * cloudSpeed
         
+        let cloudMove = CABasicAnimation(keyPath: "position.x")
+        cloudMove.duration = duration
+        cloudMove.toValue = self.view.bounds.width + layer.bounds.width/2
+        cloudMove.delegate = self
+        cloudMove.setValue("cloud", forKey: "name")
+        cloudMove.setValue(layer, forKey: "layer")
+        layer.add(cloudMove, forKey: nil)
     }
 }
 
@@ -277,6 +296,26 @@ extension ViewController: CAAnimationDelegate {
             pulse.toValue = 1.0
             pulse.duration = 0.25
             layer?.add(pulse, forKey: nil)
+        } else if name == "cloud" {
+            if let layer = anim.value(forKey: "layer") as? CALayer {
+                anim.setValue(nil ,forKey: "layer")
+                
+                layer.position.x = -layer.bounds.width/2
+                delay(0.5, completion: {
+                    self.animateCloud(layer: layer)
+                })
+            }
         }
+    }
+}
+
+extension ViewController: UITextFieldDelegate {
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        guard let runningAnimations = info.layer.animationKeys() else {
+            return
+        }
+        
+        print(runningAnimations)
+        info.layer.removeAnimation(forKey: "infoappear")
     }
 }
