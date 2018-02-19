@@ -95,7 +95,7 @@ class ViewController: UIViewController {
     
     statusPosition = status.center
     
-    info.frame = CGRect(x: 0.0, y: loginButton.center.y, width: view.frame.size.width, height: 30)
+    info.frame = CGRect(x: 0.0, y: loginButton.center.y + 60.0, width: view.frame.size.width, height: 30)
     info.backgroundColor = UIColor.clear
     info.font = UIFont(name: "HelveticaNeue", size: 12.0)
     info.textAlignment = .center
@@ -128,9 +128,6 @@ class ViewController: UIViewController {
     password.layer.add(flyRight, forKey: nil)
     password.layer.position.x = view.bounds.size.width/2
     
-    loginButton.center.y += 30.0
-    loginButton.alpha = 0
-    
     let fadeIn = CABasicAnimation(keyPath: "opacity")
     fadeIn.fromValue = 0.0
     fadeIn.toValue = 1.0
@@ -157,16 +154,38 @@ class ViewController: UIViewController {
     animateCloud(layer: cloud2.layer)
     animateCloud(layer: cloud3.layer)
     animateCloud(layer: cloud4.layer)
-
-    UIView.animate(withDuration: 0.5, delay: 0.5, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.0, options: [], animations: {
-        self.loginButton.center.y += 30.0
-        self.loginButton.alpha = 1.0
-    }, completion: nil)
+    
+    let groupAnimation = CAAnimationGroup()
+    groupAnimation.beginTime = CACurrentMediaTime() + 0.5
+    groupAnimation.duration = 0.5
+    groupAnimation.fillMode = kCAFillModeBackwards
+    
+    let scaleDown = CABasicAnimation(keyPath: "transform.scale")
+    scaleDown.fromValue = 3.5
+    scaleDown.toValue = 1.0
+    
+    let rotate = CABasicAnimation(keyPath: "transform.rotation")
+    rotate.fromValue = .pi/4.0
+    rotate.toValue = 0.0
+    
+    let fade = CABasicAnimation(keyPath: "opacity")
+    fade.fromValue = 0.0
+    fade.toValue = 1.0
+    
+    groupAnimation.animations = [scaleDown, rotate, fade]
+    loginButton.layer.add(groupAnimation, forKey: nil)
+    
+    groupAnimation.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseIn)
     
     let flyLeft = CABasicAnimation(keyPath: "position.x")
     flyLeft.fromValue = info.layer.position.x + view.frame.size.width
     flyLeft.toValue = info.layer.position.x
     flyLeft.duration = 5.0
+    flyLeft.repeatCount = 2.5
+    flyLeft.autoreverses = true
+    flyLeft.speed = 2.0
+    info.layer.speed = 2.0
+    view.layer.speed = 2.0
     info.layer.add(flyLeft, forKey: "infoappear")
     
     let fadeLabelIn = CABasicAnimation(keyPath: "opacity")
