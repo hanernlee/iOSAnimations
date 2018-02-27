@@ -58,9 +58,39 @@ class AvatarView: UIView {
   }
   
   var shouldTransitionToFinishedState = false
+    
+    func bounceOff(point: CGPoint, morphSize: CGSize) {
+        let originalCenter = center
+        
+        UIView.animate(withDuration: animationDuration, delay: 0.0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.0, animations: {
+            self.center = point
+        }) { _ in
+            // complete bounce
+        }
+        
+        UIView.animate(withDuration: animationDuration, delay: animationDuration, usingSpringWithDamping: 0.7, initialSpringVelocity: 1.0, animations: {
+            self.center = originalCenter
+        }, completion: { _ in
+            delay(seconds: 0.1, completion: {
+                self.bounceOff(point: point, morphSize: morphSize)
+            })
+        })
+        
+        let morphedFrame = (originalCenter.x > point.x) ? CGRect(x: 0.0, y: bounds.height - morphSize.height, width: morphSize.width, height: morphSize.height) : CGRect(x: bounds.width - morphSize.width, y: bounds.height - morphSize.height, width: morphSize.width, height: morphSize.height)
+        
+        let morphedAnimation = CABasicAnimation(keyPath: "path")
+        morphedAnimation.duration = animationDuration
+        morphedAnimation.toValue = UIBezierPath(ovalIn: morphedFrame).cgPath
+        morphedAnimation.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut)
+        circleLayer.add(morphedAnimation, forKey: nil)
+        maskLayer.add(morphedAnimation, forKey: nil)
+    }
   
   override func didMoveToWindow() {
     layer.addSublayer(photoLayer)
+    photoLayer.mask = maskLayer
+    layer.addSublayer(circleLayer)
+    addSubview(label)
   }
   
   override func layoutSubviews() {
