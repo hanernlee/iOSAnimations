@@ -41,6 +41,8 @@ class AvatarView: UIView {
     label.textColor = UIColor.black
     return label
   }()
+    
+  var isSquare = false
   
   //variables
   @IBInspectable
@@ -59,20 +61,40 @@ class AvatarView: UIView {
   
   var shouldTransitionToFinishedState = false
     
+    func animateToSquare() {
+        isSquare = true
+        let squarePath = UIBezierPath(rect: bounds).cgPath
+        let morph = CABasicAnimation(keyPath: "path")
+        morph.duration = 0.25
+        morph.fromValue = circleLayer.path
+        morph.toValue = squarePath
+        
+        circleLayer.add(morph, forKey: nil)
+        maskLayer.add(morph, forKey: nil)
+        
+        circleLayer.path = squarePath
+        maskLayer.path = squarePath
+    }
+    
     func bounceOff(point: CGPoint, morphSize: CGSize) {
         let originalCenter = center
         
         UIView.animate(withDuration: animationDuration, delay: 0.0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.0, animations: {
             self.center = point
         }) { _ in
-            // complete bounce
+            // complete bounce{
+            if self.shouldTransitionToFinishedState {
+                self.animateToSquare()
+            }
         }
         
         UIView.animate(withDuration: animationDuration, delay: animationDuration, usingSpringWithDamping: 0.7, initialSpringVelocity: 1.0, animations: {
             self.center = originalCenter
         }, completion: { _ in
             delay(seconds: 0.1, completion: {
-                self.bounceOff(point: point, morphSize: morphSize)
+                if (!self.isSquare) {
+                    self.bounceOff(point: point, morphSize: morphSize)
+                }
             })
         })
         
