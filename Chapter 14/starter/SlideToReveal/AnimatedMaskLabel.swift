@@ -53,13 +53,40 @@ class AnimatedMaskLabel: UIView {
   @IBInspectable var text: String! {
     didSet {
       setNeedsDisplay()
+        
+        let image = UIGraphicsImageRenderer(size: bounds.size).image { _ in
+            text.draw(in: bounds, withAttributes: textAttributes)
+        }
+        
+        let maskLayer = CALayer()
+        maskLayer.backgroundColor = UIColor.clear.cgColor
+        maskLayer.frame = bounds.offsetBy(dx: bounds.size.width, dy: 0)
+        maskLayer.contents = image.cgImage
+        
+        gradientLayer.mask = maskLayer
     }
   }
   
+    let textAttributes: [NSAttributedStringKey: Any] = {
+        let style = NSMutableParagraphStyle()
+        style.alignment = .center
+        return [
+            NSAttributedStringKey.font: UIFont(
+                name: "HelveticaNeue-Thin",
+                size: 28.0)!,
+            NSAttributedStringKey.paragraphStyle: style
+        ]
+    }()
+    
   override func layoutSubviews() {
     layer.borderColor = UIColor.green.cgColor
     
-    gradientLayer.frame = bounds
+    gradientLayer.frame = CGRect(
+        x: -bounds.size.width,
+        y: bounds.origin.y,
+        width: 3 * bounds.size.width,
+        height: bounds.size.height
+    )
   }
   
   override func didMoveToWindow() {
