@@ -64,6 +64,10 @@ class LockScreenViewController: UIViewController {
     AnimatorFactory.scaleUp(view: tableView).startAnimation()
   }
   
+  func toggleBlur(_ blurred: Bool) {
+    AnimatorFactory.fade(view: blurView, visible: blurred)
+  }
+  
   @IBAction func presentSettings(_ sender: Any? = nil) {
     //present the view controller
     settingsController = storyboard?.instantiateViewController(withIdentifier: "SettingsViewController") as! SettingsViewController
@@ -73,6 +77,26 @@ class LockScreenViewController: UIViewController {
 }
 
 extension LockScreenViewController: WidgetsOwnerProtocol { }
+
+extension LockScreenViewController: UISearchBarDelegate {
+  func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+    toggleBlur(true)
+  }
+  
+  func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+    toggleBlur(false)
+  }
+  
+  func searchBarResultsListButtonClicked(_ searchBar: UISearchBar) {
+    searchBar.resignFirstResponder()
+  }
+  
+  func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+    if searchText.isEmpty {
+      searchBar.resignFirstResponder()
+    }
+  }
+}
 
 extension LockScreenViewController: UITableViewDataSource {
 
