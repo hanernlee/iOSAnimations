@@ -36,6 +36,15 @@ class AnimatorFactory {
     }
     return scale
   }
+  
+  static func grow(view: UIVisualEffectView, blurView: UIVisualEffectView) -> UIViewPropertyAnimator {
+    view.contentView.alpha = 0
+    view.transform = .identity
+    
+    let animator = UIViewPropertyAnimator(duration: 0.5, curve: .easeIn)
+    
+    return animator
+  }
 
   @discardableResult
   static func jiggle(view: UIView) -> UIViewPropertyAnimator {
