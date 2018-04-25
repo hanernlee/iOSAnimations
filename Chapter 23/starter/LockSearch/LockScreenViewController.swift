@@ -39,6 +39,8 @@ class LockScreenViewController: UIViewController {
   var previewAnimator: UIViewPropertyAnimator?
 
   let previewEffectView = IconEffectView(blur: .extraLight)
+  
+  let presentTransition = PresentTransition()
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -87,6 +89,7 @@ class LockScreenViewController: UIViewController {
   @IBAction func presentSettings(_ sender: Any? = nil) {
     //present the view controller
     settingsController = storyboard?.instantiateViewController(withIdentifier: "SettingsViewController") as! SettingsViewController
+    settingsController.transitioningDelegate = self
     present(settingsController, animated: true, completion: nil)
   }
 
@@ -202,5 +205,11 @@ extension LockScreenViewController: UISearchBarDelegate {
     if searchText.isEmpty {
       searchBar.resignFirstResponder()
     }
+  }
+}
+
+extension LockScreenViewController: UIViewControllerTransitioningDelegate {
+  func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+    return presentTransition
   }
 }
