@@ -44,6 +44,8 @@ class LockScreenViewController: UIViewController {
   
   var isDragging = false
   var isPresentSettings = false
+  
+  var touchesStartPointY: CGFloat?
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -75,6 +77,31 @@ class LockScreenViewController: UIViewController {
       .startAnimation()
     AnimatorFactory.animateConstraint(view: view, constraint: dateTopConstraint, by: 100)
       .startAnimation()
+  }
+  
+  override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+    guard presentTransition.wantsInteractiveStart == false, presentTransition.animator != nil else {
+      return
+    }
+    
+    touchesStartPointY = touches.first!.location(in: view).y
+    presentTransition.interruptTransition()
+  }
+  
+  override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+    guard let startY = touchesStartPointY else { return }
+    
+    let currentPoint = touches.first!.location(in: view).y
+    if currentPoint < startY - 40 {
+      touchesStartPointY = nil
+      presentTransition.animator?.addCompletion{ _ in
+        self.blurView.effect = nil
+      }
+      presentTransition.cancel()
+    } else if currentPoint > startY + 40 {
+      touchesStartPointY = nil
+      presentTransition.finish()
+    }
   }
 
   func toggleBlur(_ blurred: Bool) {
