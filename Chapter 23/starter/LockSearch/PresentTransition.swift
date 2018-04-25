@@ -8,7 +8,10 @@
 
 import UIKit
 
-class PresentTransition: NSObject, UIViewControllerAnimatedTransitioning {
+class PresentTransition: UIPercentDrivenInteractiveTransition, UIViewControllerAnimatedTransitioning {
+  var auxAnimations: (() -> Void)?
+  var auxAnimationsCancel: (() -> Void)?
+  
   func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
     return 0.75
   }
@@ -35,10 +38,24 @@ class PresentTransition: NSObject, UIViewControllerAnimatedTransitioning {
       to.alpha = 1.0
     }, delayFactor: 0.5)
     
-    animator.addCompletion { _ in
-      transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
+    animator.addCompletion { position in
+      switch position {
+      case .end:
+        transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
+      default:
+        transitionContext.completeTransition(false)
+        self.auxAnimationsCancel?()
+      }
+    }
+    
+    if let auxAnimations = auxAnimations {
+      animator.addAnimations(auxAnimations)
     }
     
     return animator
+  }
+  
+  func interruptibleAnimator(using transitionContext: UIViewControllerContextTransitioning) -> UIViewImplicitlyAnimating {
+    return transitionAnimator(using: transitionContext)
   }
 }
