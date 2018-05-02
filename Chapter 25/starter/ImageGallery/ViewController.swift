@@ -31,6 +31,8 @@ class ViewController: UIViewController {
     ImageViewCard(imageNamed: "Hurricane_Norbert.jpg", title: "Hurricane Norbert"),
     ImageViewCard(imageNamed: "Hurricane_Irene.jpg", title: "Hurricane Irene")
   ]
+    
+  var isGalleryOpen = false
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -52,6 +54,7 @@ class ViewController: UIViewController {
         image.layer.anchorPoint.y = 0.0
         image.frame = view.bounds
         view.addSubview(image)
+        image.didSelect = selectImage
     }
     
     navigationItem.title = images.last?.title
@@ -60,8 +63,53 @@ class ViewController: UIViewController {
     view.layer.sublayerTransform = perspective
     
   }
+    
+  func selectImage(selectedImage: ImageViewCard) {
+    for subview in view.subviews {
+        guard let image = subview as? ImageViewCard else {
+            continue
+        }
+        
+        if image == selectedImage {
+            UIView.animate(withDuration: 0.33, delay: 0.0, options: .curveEaseIn, animations: {
+                image.layer.transform = CATransform3DIdentity
+            }) { _ in
+                self.view.bringSubview(toFront: image)
+            }
+        } else {
+            UIView.animate(withDuration: 0.33, delay: 0.0, options: .curveEaseIn, animations: {
+                image.alpha = 0.0
+            }) { _ in
+                image.alpha = 1.0
+                image.layer.transform = CATransform3DIdentity
+            }
+        }
+    }
+    
+    self.navigationItem.title = selectedImage.title
+    isGalleryOpen = false
+  }
   
   @IBAction func toggleGallery(_ sender: AnyObject) {
+    if isGalleryOpen {
+        for subview in view.subviews {
+            guard let image = subview as? ImageViewCard else {
+                continue
+            }
+            
+            let animation = CABasicAnimation(keyPath: "transform")
+            animation.fromValue = NSValue(caTransform3D: image.layer.transform)
+            animation.toValue = NSValue(caTransform3D: CATransform3DIdentity)
+            animation.duration = 0.33
+            
+            image.layer.add(animation, forKey: nil)
+            image.layer.transform = CATransform3DIdentity
+        }
+        
+        isGalleryOpen = false
+        return
+    }
+    
     var imageYOffset: CGFloat = 50.0
     
     for subview in view.subviews {
@@ -70,11 +118,22 @@ class ViewController: UIViewController {
         }
         
         var imageTransform = CATransform3DIdentity
-        
         imageTransform = CATransform3DTranslate(imageTransform, 0.0, imageYOffset, 0.0)
         imageTransform = CATransform3DScale(imageTransform, 0.95, 0.6, 1.0)
         imageTransform = CATransform3DRotate(imageTransform, .pi/8, -1.0, 0.0, 0.0)
+        
+        let animation = CABasicAnimation(keyPath: "transform")
+        animation.fromValue = NSValue(caTransform3D: image.layer.transform)
+        animation.toValue = NSValue(caTransform3D: imageTransform)
+        animation.duration = 0.33
+        image.layer.add(animation, forKey: nil)
+        
+        image.layer.transform = imageTransform
+        
+        imageYOffset += view.frame.height / CGFloat(images.count)
     }
+
+    isGalleryOpen = true
   }
   
 }
