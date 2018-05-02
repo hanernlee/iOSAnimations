@@ -82,6 +82,9 @@ class ContainerViewController: UIViewController {
     case .began:
       let isOpen = floor(centerViewController.view.frame.origin.x/menuWidth)
       isOpening = isOpen == 1.0 ? false: true
+    
+      menuViewController.view.layer.shouldRasterize = true
+      menuViewController.view.layer.rasterizationScale = UIScreen.main.scale
       
     case .changed:
       setMenu(toPercent: isOpening ? progress: (1.0 - progress))
@@ -90,6 +93,7 @@ class ContainerViewController: UIViewController {
     case .cancelled: fallthrough
     case .failed:
       
+      menuViewController.view.layer.shouldRasterize = false
       var targetProgress: CGFloat
       if (isOpening) {
         targetProgress = progress < 0.5 ? 0.0 : 1.0
